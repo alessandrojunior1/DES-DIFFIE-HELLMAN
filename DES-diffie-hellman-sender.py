@@ -19,32 +19,29 @@ try:
     client.send(str(A).encode())
 
     # Receber chave pública do Receiver
-    b = int(client.recv(1024).decode())
+    b = int(client.recv(1024).decode().strip())
     print(f"[Sender] Chave pública do Receiver recebida: {b}")
 
     # Calcular chave secreta compartilhada
     shared_secret = (b**segredo) % p
-    des_key = derive_des_key(shared_secret)
-    
-    # Converte o texto plano para bits e aplica padding
-    textoPlanoBits = string_to_bits(textoPlano)
-    padded_textoPlanoBits = pad_text(textoPlanoBits)
+    binary_secret = bin(shared_secret)[2:][-56:].zfill(56)  # Garante 56 bits
+    des_key = [int(bit) for bit in binary_secret]
 
     # Cifra o texto com o DES
-    encrypted_bits = []
-    for i in range(0, len(padded_textoPlanoBits), 64):
-        block = padded_textoPlanoBits[i:i + 64]
-        encrypted_block = des_encrypt_block(block, des_key)
-        encrypted_bits.extend(encrypted_block)
+    encrypted_bits = des_encrypt(textoPlano, des_key)
+    
+    # Enviar o tamanho da mensagem cifrada
+    client.send(str(len(encrypted_bits)).encode())
+    
+    # Aguarda confirmação do receiver
+    if client.recv(16).decode().strip() != 'OK':
+        raise Exception("Erro ao sincronizar com o Receiver.")
 
-    # Converte os bits cifrados de volta para texto
-    encrypted_text = bits_to_string(encrypted_bits)
-
-    # Enviar texto cifrado para o Receiver
+    # Enviar os bits cifrados
     client.send(' '.join(map(str, encrypted_bits)).encode())
 
     print(f"[Sender] Chave secreta compartilhada: {des_key}")
-    print(f"[Sender] O texto encriptado é: {encrypted_text}")
+    print(f"[Sender] O texto encriptado foi enviado com sucesso.")
 
 except Exception as e:
     print(f"[Sender] Erro: {e}")

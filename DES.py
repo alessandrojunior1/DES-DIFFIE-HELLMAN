@@ -72,10 +72,30 @@ def des_decrypt_block(block, key):
     combined = L + R
     return permute(combined, IP_INV)
 
-
 def derive_des_key(shared_secret):
     """Deriva uma chave de 56 bits a partir da chave compartilhada Diffie-Hellman."""
     binary_secret = bin(shared_secret)[2:][-56:]  # Pega os 56 bits menos significativos
     return [int(bit) for bit in binary_secret.zfill(56)]
 
+def des_encrypt(text, key):
+    """Cifra um texto completo usando DES em blocos de 64 bits."""
+    text_bits = string_to_bits(text)
+    text_bits = pad_text(text_bits)
+    encrypted_bits = []
+    
+    for i in range(0, len(text_bits), 64):
+        block = text_bits[i:i+64]
+        encrypted_bits.extend(des_encrypt_block(block, key))
+    
+    return encrypted_bits
 
+def des_decrypt(encrypted_bits, key):
+    """Decifra um texto cifrado pelo DES em blocos de 64 bits."""
+    decrypted_bits = []
+    
+    for i in range(0, len(encrypted_bits), 64):
+        block = encrypted_bits[i:i+64]
+        decrypted_bits.extend(des_decrypt_block(block, key))
+    
+    decrypted_bits = unpad_text(decrypted_bits)
+    return bits_to_string(decrypted_bits)

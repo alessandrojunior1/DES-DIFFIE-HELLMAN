@@ -18,7 +18,7 @@ try:
     print(f"[Receiver] Conectado a {addr}")
 
     # Receber chave pública do Sender
-    a = int(conn.recv(1024).decode())  # Recebe chave pública de Sender
+    a = int(conn.recv(1024).decode().strip())  # Remove espaços extras
     print(f"[Receiver] Chave pública de Sender recebida: {a}")
 
     # Enviar chave pública do Receiver
@@ -27,21 +27,26 @@ try:
 
     # Calcular chave secreta compartilhada
     shared_secret = (a**segredo) % p
-    des_key = derive_des_key(shared_secret)
+    binary_secret = bin(shared_secret)[2:].zfill(56)[-56:]  # Garante 56 bits
+    des_key = [int(bit) for bit in binary_secret]
 
-    # Receber a mensagem cifrada
-    encrypted_message = list(map(int, conn.recv(1024).decode().split()))
-    
-    # Descriptografar a mensagem por blocos
-    decrypted_bits = []
-    for i in range(0, len(encrypted_message), 64):
-        block = encrypted_message[i:i + 64]
-        decrypted_block = des_decrypt_block(block, des_key)
-        decrypted_bits.extend(decrypted_block)
+    # Receber o tamanho da mensagem cifrada
+    encrypted_size = int(conn.recv(16).decode().strip())
+    conn.send(b'OK')  # Confirma recebimento do tamanho
 
-    # Remover padding do texto decriptado
-    decrypted_bits = unpad_text(decrypted_bits)
-    decrypted_text = bits_to_string(decrypted_bits)
+    # Receber a mensagem cifrada completa
+    data_buffer = ""
+    while len(data_buffer.split()) < encrypted_size:
+        chunk = conn.recv(1024).decode()
+        if not chunk:
+            break
+        data_buffer += chunk.strip() + " "
+
+    # Processar a string recebida e converter para lista de inteiros
+    encrypted_message = list(map(int, data_buffer.strip().split()))
+
+    # Descriptografar a mensagem completa com o DES
+    decrypted_text = des_decrypt(encrypted_message, des_key).strip()
 
     print(f"[Receiver] Chave secreta compartilhada: {des_key}")
     print(f"[Receiver] O texto decriptado é: {decrypted_text}")
