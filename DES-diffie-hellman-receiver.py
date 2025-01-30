@@ -1,6 +1,6 @@
 import socket
 import random
-
+from DES import *
 
 p = 17
 i = 3
@@ -22,12 +22,29 @@ try:
     print(f"[Receiver] Chave pública de Sender recebida: {a}")
 
     # Enviar chave pública do Receiver
-    b = (i**segredo) % p
-    conn.send(str(b).encode())
+    B = (i**segredo) % p
+    conn.send(str(B).encode())
 
     # Calcular chave secreta compartilhada
     shared_secret = (a**segredo) % p
-    print(f"[Receiver] Chave secreta compartilhada: {shared_secret}")
+    des_key = derive_des_key(shared_secret)
+
+    # Receber a mensagem cifrada
+    encrypted_message = list(map(int, conn.recv(1024).decode().split()))
+    
+    # Descriptografar a mensagem por blocos
+    decrypted_bits = []
+    for i in range(0, len(encrypted_message), 64):
+        block = encrypted_message[i:i + 64]
+        decrypted_block = des_decrypt_block(block, des_key)
+        decrypted_bits.extend(decrypted_block)
+
+    # Remover padding do texto decriptado
+    decrypted_bits = unpad_text(decrypted_bits)
+    decrypted_text = bits_to_string(decrypted_bits)
+
+    print(f"[Receiver] Chave secreta compartilhada: {des_key}")
+    print(f"[Receiver] O texto decriptado é: {decrypted_text}")
 
 except Exception as e:
     print(f"[Receiver] Erro: {e}")
