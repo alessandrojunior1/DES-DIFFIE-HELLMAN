@@ -30,6 +30,9 @@ try:
     binary_secret = bin(shared_secret)[2:].zfill(56)[-56:]  # Garante 56 bits
     des_key = [int(bit) for bit in binary_secret]
 
+    # Completa os 64 bits da chave DES (adicionando 8 bits de padding)
+    des_key = des_key + [0]*8  # Pode ser [1]*8 também, depende do sistema
+
     # Receber o tamanho da mensagem cifrada
     encrypted_size = int(conn.recv(16).decode().strip())
     conn.send(b'OK')  # Confirma recebimento do tamanho
