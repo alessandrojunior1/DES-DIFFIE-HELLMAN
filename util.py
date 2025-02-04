@@ -1,4 +1,5 @@
 import random
+import os
 
 def random_number(START=1,END=200):
     # Retorna um número aleatório entre um intervalo
@@ -27,3 +28,10 @@ def is_prime(n):
         i += 6  # Pula para o próximo possível divisor (6k ± 1)
     
     return True
+
+def clear_terminal():
+    sistema = os.name
+    if sistema == 'nt': #Para Windows
+        os.system('cls')
+    else: # Para Linux e outros sistemas(como macOS)
+        os.system('clear')
