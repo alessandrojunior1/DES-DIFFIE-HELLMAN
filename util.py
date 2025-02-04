@@ -1,15 +1,16 @@
 import random
 
-def random_number(START=1,END=50):
+def random_number(START=1,END=200):
+    # Retorna um número aleatório entre um intervalo
     return random.randint(START,END)
 
 
-def random_number_prime(START=1,END=50):
+def random_number_prime(START=1,END=200):
+    # Retorna um número primo aleatório entre um intervalo
     while True:
         n = random.randint(START,END)
         if is_prime(n):
                 return n
-
 
 def is_prime(n):
     if n < 2:
