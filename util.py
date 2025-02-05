@@ -1,35 +1,20 @@
 import random
 import os
 
-def random_number(START=1,END=200):
-    # Retorna um número aleatório entre um intervalo
-    return random.randint(START,END)
+def random_number(s=1, e=100):
+    """Gera um número aleatório dentro do intervalo, s(Start) e(End), especificado."""
+    return random.randint(s, e)
 
-
-def random_number_prime(START=1,END=200):
-    # Retorna um número primo aleatório entre um intervalo
+def random_number_prime(s=2, e=100):
+    """Gera um número primo aleatório dentro do intervalo, s(Start) e(End), especificado."""
+    is_prime = lambda n: n > 1 and all(n % i != 0 for i in range(2, int(n**0.5) + 1))
     while True:
-        n = random.randint(START,END)
-        if is_prime(n):
-                return n
-
-def is_prime(n):
-    if n < 2:
-        return False
-    if n in (2, 3):  # 2 e 3 são primos
-        return True
-    if n % 2 == 0 or n % 3 == 0:  # Remove múltiplos de 2 e 3 rapidamente
-        return False
-    
-    i = 5
-    while i * i <= n:  # Testa apenas até √n
-        if n % i == 0 or n % (i + 2) == 0:  # Testa i e i+2 (evita múltiplos de 2 e 3)
-            return False
-        i += 6  # Pula para o próximo possível divisor (6k ± 1)
-    
-    return True
+        num = random_number(s, e)
+        if is_prime(num):
+            return num
 
 def clear_terminal():
+    """Limpa o terminal."""
     sistema = os.name
     if sistema == 'nt': #Para Windows
         os.system('cls')
